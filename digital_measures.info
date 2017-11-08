@@ -1,0 +1,11 @@
+name = Digital Measures
+description = Access digital measures API to provide content for Personal Information in Profiles
+package = Purdue System Modules
+core = 7.x
+configure = admin/config/content/digital_measures
+
+; Information added by Matt on 2017-07-21
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "digital_measures"
+datestamp = "1481301114"

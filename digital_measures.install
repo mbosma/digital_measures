@@ -1,0 +1,134 @@
+<?php 
+/**
+ * Implements hook_install() to add Digital Measures checkbox to user profile when the module is first enabled.
+ */
+function digital_measures_install() {
+  // Check if our field is not already created,
+	// add the field to the user account if not
+  if (!field_info_field('field_display_content_from_dm')) {
+    field_create_field(array(
+			'translatable' => '0',
+			'entity_types' => array(),
+			'settings' => array(
+				'allowed_values' => array(
+					'',
+					'',
+				),
+				'allowed_values_function' => '',
+			),
+			'storage' => array(
+				'type' => 'field_sql_storage',
+				'settings' => array(),
+				'module' => 'field_sql_storage',
+				'active' => '1',
+				'details' => array(
+					'sql' => array(
+						'FIELD_LOAD_CURRENT' => array(
+							'field_data_field_display_content_from_dm' => array(
+								'value' => 'field_display_content_from_dm_value',
+							),
+						),
+						'FIELD_LOAD_REVISION' => array(
+							'field_revision_field_display_content_from_dm' => array(
+								'value' => 'field_display_content_from_dm_value',
+							),
+						),
+					),
+				),
+			),
+			'foreign keys' => array(),
+			'indexes' => array(
+				'value' => array(
+					'value',
+				),
+			),
+			'field_permissions' => array(
+				'type' => '0',
+			),
+			'field_name' => 'field_display_content_from_dm',
+			'type' => 'list_boolean',
+			'module' => 'list',
+			'active' => '1',
+			'locked' => '0',
+			'cardinality' => '1',
+			'deleted' => '0',
+			'columns' => array(
+				'value' => array(
+					'type' => 'int',
+					'not null' => FALSE,
+				),
+			),
+			'bundles' => array(
+				'user' => array(
+					'user',
+				),
+			),
+		));
+		field_create_instance(array(
+			'label' => 'Display Content from Digital Measures',
+			'widget' => array(
+				'weight' => '73',
+				'type' => 'options_onoff',
+				'module' => 'options',
+				'active' => 1,
+				'settings' => array(
+					'display_label' => 0,
+				),
+			),
+			'settings' => array(
+				'user_register_form' => 0,
+			),
+			'display' => array(
+				'default' => array(
+					'label' => 'above',
+					'type' => 'list_default',
+					'settings' => array(),
+					'module' => 'list',
+					'weight' => 64,
+				),
+				'full' => array(
+					'type' => 'hidden',
+					'label' => 'above',
+					'settings' => array(),
+					'weight' => 0,
+				),
+				'directory_entry' => array(
+					'type' => 'hidden',
+					'label' => 'above',
+					'settings' => array(),
+					'weight' => 0,
+				),
+				'user_full_name' => array(
+					'type' => 'hidden',
+					'label' => 'above',
+					'settings' => array(),
+					'weight' => 0,
+				),
+				'token' => array(
+					'type' => 'hidden',
+					'label' => 'above',
+					'settings' => array(),
+					'weight' => 0,
+				),
+			),
+			'required' => 0,
+			'description' => 'For faculty members only. Check this box to display your CV content from Digital Measures. Visit the <a href="https://www.digitalmeasures.com/login/purdue/faculty/authentication/showLogin.do?message=login.error.invalidLogin&shce_production=1510078475654">Digital Measures website</a> to curate your content.',
+			'default_value' => array(
+				array(
+					'value' => 0,
+				),
+			),
+			'field_name' => 'field_display_content_from_dm',
+			'entity_type' => 'user',
+			'bundle' => 'user',
+			'deleted' => '0',
+		));
+  }
+}
+/**
+ * Implements hook_install() to add Digital Measures checkbox to user profile when the module is first enabled.
+ */
+function digital_measures_uninstall() {
+  field_delete_field('field_display_content_from_dm');
+	field_purge_batch();
+}
