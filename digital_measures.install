@@ -112,7 +112,7 @@ function digital_measures_install() {
 				),
 			),
 			'required' => 0,
-			'description' => 'For faculty members only. Check this box to display your CV content from Digital Measures. Visit the <a href="https://www.digitalmeasures.com/login/purdue/faculty/authentication/showLogin.do?message=login.error.invalidLogin&shce_production=1510078475654">Digital Measures website</a> to curate your content.',
+			'description' => 'For faculty members only. Check this box to display your CV content from Digital Measures. Visit the <a href="https://www.purdue.edu/apps/account/cas/login?service=https%3A%2F%2Fwww.purdue.edu%2Fapps%2Fidphs%2FAuthn%2FExtCas%3Fconversation%3De1s1&entityId=https%3A%2F%2Fwww.digitalmeasures.com%2Fshibboleth-sp%2F" target="blank">Digital Measures website</a> to curate your content.',
 			'default_value' => array(
 				array(
 					'value' => 0,

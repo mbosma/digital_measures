@@ -123,7 +123,7 @@ function digital_measures_download_page($path, $dm_request){
 
 	curl_close($ch);
 	$after = microtime(true);
-	dpm(($after-$before) . " sec: " . $path);
+	//dpm(($after-$before) . " sec: " . $path);
 	return $retValue;
 }
 
