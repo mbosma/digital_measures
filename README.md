@@ -7,7 +7,7 @@ Features:
 * Create three system variables: *Digital Measures API URL*, *Digital Measures Username*, and *Digital Measures Password*
 * Creates a block: "*Digital Measures Profile Data*" that can be assigned to user profile pages
 
-** Installation Instructions
+## Installation Instructions
 1. Get a username and password from your Digital Measures contact on Purdue University.
 1. Set up the system variables in the configuration settings page here: /admin/config/content/digital_measures
 1. Assign the "Digital Measures Profile Data" to the user display pages. For example: profile/* The block is located here: /admin/structure/block/manage/digital_measures/digital_measures_profile_data/configure
