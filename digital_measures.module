@@ -118,7 +118,7 @@ function digital_measures_download_page($path, $dm_request){
 	if(curl_errno($ch))	{
 		$errorMessage = curl_error($ch);
 			// TODO: Handle cURL error
-		dpm("There was an error retrieving content from Digital Measures. Error: " . $errorMessage);
+		//dpm("The was an error retrieving content from Digital Measures. Error: " . $errorMessage);
 	}
 
 	curl_close($ch);
@@ -137,333 +137,329 @@ function _digital_measures_get_data($dm_request){
 	//dpm($sXML);
   $testxml = simplexml_load_string($sXML);
 	if ($testxml == false) {
-		$output = "<p>There was an error retrieving the content for user " . $dm_request['user'] . "</p>";
+		$output = "<div class='messages error margin-top-large'><p>The user " . $dm_request['user'] . " selected to show Curriculum Vitae data from Digital Measures but does not have a valid Digital Measures account.</p></div>";
 	} else {  
 		$xml = new SimpleXMLElement($sXML);
-		//dpm($xml);
-	}
-	
-	//start the output by hiding all of the CV content with CSS
-	$output = "<style type='text/css'>#block-quicktabs-user-profile-cv-tabs {display:none;}</style>";
-	
-	//bio paragraph
-	if ((string)$xml->Record->PCI->BIO != ""){
-		$output = $output . "<h3>Bief Biography</h3>" . 
-			"<p>" . (string)$xml->Record->PCI->BIO . "</p>";
-	}
-	//teaching intererst paragraph
-	if ((string)$xml->Record->PCI->TEACHING_INTERESTS != ""){
-	$output = $output . "<h3>Teaching Interests</h3>" . 
-		"<p>" . (string)$xml->Record->PCI->TEACHING_INTERESTS . "</p>";
-	}
-	//research intererst paragraph
-	if ((string)$xml->Record->PCI->RESEARCH_INTERESTS != ""){
-	$output = $output . "<h3>Research Interests</h3>" . 
-		"<p>" . (string)$xml->Record->PCI->RESEARCH_INTERESTS . "</p>";
-	}
-	//professional collaborators paragraph
-	if ((string)$xml->Record->PCI->RESEARCH_INTERESTS != ""){
-	$output = $output . "<h3>Professional Collaborators</h3>" . 
-		"<p>" . (string)$xml->Record->PCI->PROF_COLLAB . "</p>";
-	}
-	//Ordered list of References
-	$refcount = count($xml->Record->PCI->REFERENCE);
-	if ($refcount > 0) {
-		$output = $output . "<h3>References</h3><ol>";
-		foreach($xml->Record->PCI->REFERENCE as $item){
-			$output = $output . "<li>Name: " . $item->NAME . "<br/>";
-			$output = $output . "Title: " . $item->TITLE . "<br/>";
-			$output = $output . "Organization: " . $item->ORG . "<br/>";
-			$output = $output . "Address: " . $item->ADDRESS . "<br/>";
-			$output = $output . "City/State: " . $item->CITYSTATE . "</li>";
-		}
-		$output = $output . "</ol>";
-	}
-	//list of Websites
-	$refcount = count($xml->Record->PCI->PCI_WEBSITE);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Personal Website";
-		if ($refcount != 1) $output = $output . "s";
-		$output = $output . "</h3>";
-		foreach($xml->Record->PCI->PCI_WEBSITE as $item){
-			$output = $output . "<p><a href='" . $item->WEBSITE . "' target='-blank'>" . $item->WEBSITE . "</a></p>";
-		}
-	}
-	//list of Intellectual content
-	$refcount = count($xml->Record->PCI->PCI_INTELLCONT_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Intellectual Content</h3>";
-		foreach($xml->Record->PCI->PCI_INTELLCONT_REF as $item){
-			$output = $output . "<p>";
-			
-			//Output the publication authors
-			$authcount = count($item->INTELLCONT->INTELLCONT_AUTH);
-			$i = 0;
-			if ($authcount > 0) {
-				foreach($item->INTELLCONT->INTELLCONT_AUTH as $author){
-					
-					//save the name parts as variables
-					$LNAME = $author->LNAME;
-					$FNAME = $author->FNAME;
-					$MNAME = $author->MNAME;
-					
-					//if it's not the first name, add a comma seperator
-					if ($i != 0) $output = $output . ", ";
-					
-					//make sure the name parts exist before output
-					if ($LNAME != "") $output = $output . $LNAME . ",";
-					if ($FNAME != "") $output = $output . " " . substr($FNAME, 0,1) . ".";
-					if ($MNAME != "") $output = $output . " " . substr($MNAME, 0,1) . ".";
+		$output = "";
 
-					$i ++;
-				}
-				
+		//bio paragraph
+		if ((string)$xml->Record->PCI->BIO != ""){
+			$output = $output . "<h3>Bief Biography</h3>" . 
+				"<p>" . (string)$xml->Record->PCI->BIO . "</p>";
+		}
+
+		//list of Education Records
+		if (!empty($xml->Record->PCI->PCI_EDUCATION_REF->EDUCATION)) {
+			$output = $output . "<h3>Education</h3>";
+			foreach($xml->Record->PCI->PCI_EDUCATION_REF as $item){
 				//save items as variables
-				$DTY_PUB = $item->INTELLCONT->DTY_PUB;
-				$TITLE = $item->INTELLCONT->TITLE;
-				$JOURNAL_NAME = $item->INTELLCONT->JOURNAL_NAME;
-				$PUBLISHER = $item->INTELLCONT->PUBLISHER;
-				$VOLUME = $item->INTELLCONT->VOLUME;
-				$ISSUE = $item->INTELLCONT->ISSUE;
-				$PAGENUM = $item->INTELLCONT->PAGENUM;
-				$PUBCTYST = $item->INTELLCONT->PUBCTYST;
-				$OPEN_ACCESS_URL = $item->INTELLCONT->OPEN_ACCESS_URL;
-				
+				$DEG = $item->EDUCATION->DEG;
+				$MAJOR = $item->EDUCATION->MAJOR;
+				$SCHOOL = $item->EDUCATION->SCHOOL;
+				$YR_COMP = $item->EDUCATION->YR_COMP;
+
 				//test if the variable has contents, then format output
-				if ($DTY_PUB != "") $output = $output . " (" . $DTY_PUB . ")";
-				if ($TITLE != "") $output = $output . " <em>" . $TITLE . "</em>";
-				if ($JOURNAL_NAME != "") $output = $output . ", " . $JOURNAL_NAME . "";
-				if ($PUBLISHER != "") $output = $output . ", " . $PUBLISHER . "";
-				if ($ISSUE != "" || $VOLUME != "" || $PAGENUM != "") {
-					$output = $output . ",";
-					if ($VOLUME != "") $output = $output . " " . $VOLUME . "";
-					if ($ISSUE != "") $output = $output . "(" . $ISSUE . ")";
-					
-					if ($PAGENUM != "") $output = $output . ", " . $PAGENUM . "";
-					$output = $output . "";
+				$output = $output . "<p>";
+				if ($DEG != "") $output = $output . "" . $DEG . "";
+				if ($MAJOR != "") $output = $output . " " . $MAJOR;
+				if ($SCHOOL != "") $output = $output . " " . $SCHOOL;
+				if ($YR_COMP != "") $output = $output . ", " . $YR_COMP;
+				$output = $output . "</p>";
+			}
+		}
+
+		//teaching intererst paragraph
+		if ((string)$xml->Record->PCI->TEACHING_INTERESTS != ""){
+		$output = $output . "<h3>Teaching Interests</h3>" . 
+			"<p>" . (string)$xml->Record->PCI->TEACHING_INTERESTS . "</p>";
+		}
+		//research intererst paragraph
+		if ((string)$xml->Record->PCI->RESEARCH_INTERESTS != ""){
+		$output = $output . "<h3>Research Interests</h3>" . 
+			"<p>" . (string)$xml->Record->PCI->RESEARCH_INTERESTS . "</p>";
+		}
+		//professional collaborators paragraph
+		if ((string)$xml->Record->PCI->PROF_COLLAB != ""){
+		$output = $output . "<h3>Professional Collaborators</h3>" . 
+			"<p>" . (string)$xml->Record->PCI->PROF_COLLAB . "</p>";
+		}
+		//Ordered list of References
+		if (!empty($xml->Record->PCI->REFERENCE->NAME)) {
+			$output = $output . "<h3>References</h3><ol>";
+			foreach($xml->Record->PCI->REFERENCE as $item){
+				$output = $output . "<li>Name: " . $item->NAME . "<br/>";
+				if (!empty($item->TITLE)) $output = $output . "Title: " . $item->TITLE . "<br/>";
+				if (!empty($item->ORG)) $output = $output . "Organization: " . $item->ORG . "<br/>";
+				if (!empty($item->ADDRESS)) $output = $output . "Address: " . $item->ADDRESS . "<br/>";
+				if (!empty($item->CITYSTATE)) $output = $output . "City/State: " . $item->CITYSTATE . "</li>";
+			}
+			$output = $output . "</ol>";
+		}
+
+		//list of Intellectual content
+		if (!empty($xml->Record->PCI->PCI_INTELLCONT_REF->INTELLCONT)) {
+			$output = $output . "<h3>Intellectual Content (renaming and adding separated buckets)</h3>";
+			foreach($xml->Record->PCI->PCI_INTELLCONT_REF as $item){
+				$output = $output . "<p>";
+
+				//Output the publication authors
+				$authcount = count($item->INTELLCONT->INTELLCONT_AUTH);
+				$i = 0;
+				if ($authcount > 0) {
+					foreach($item->INTELLCONT->INTELLCONT_AUTH as $author){
+
+						//save the name parts as variables
+						$LNAME = $author->LNAME;
+						$FNAME = $author->FNAME;
+						$MNAME = $author->MNAME;
+
+						//if it's not the first name, add a comma seperator
+						if ($i != 0) $output = $output . ", ";
+
+						//make sure the name parts exist before output
+						if ($LNAME != "") $output = $output . $LNAME . ",";
+						if ($FNAME != "") $output = $output . " " . substr($FNAME, 0,1) . ".";
+						if ($MNAME != "") $output = $output . " " . substr($MNAME, 0,1) . ".";
+
+						$i ++;
+					}
+
+					//save items as variables
+					$DTY_PUB = $item->INTELLCONT->DTY_PUB;
+					$TITLE = $item->INTELLCONT->TITLE;
+					$JOURNAL_NAME = $item->INTELLCONT->JOURNAL_NAME;
+					$PUBLISHER = $item->INTELLCONT->PUBLISHER;
+					$VOLUME = $item->INTELLCONT->VOLUME;
+					$ISSUE = $item->INTELLCONT->ISSUE;
+					$PAGENUM = $item->INTELLCONT->PAGENUM;
+					$PUBCTYST = $item->INTELLCONT->PUBCTYST;
+					$OPEN_ACCESS_URL = $item->INTELLCONT->OPEN_ACCESS_URL;
+
+					//test if the variable has contents, then format output
+					if ($DTY_PUB != "") $output = $output . " (" . $DTY_PUB . ")";
+					if ($TITLE != "") $output = $output . " <em>" . $TITLE . "</em>";
+					if ($JOURNAL_NAME != "") $output = $output . ", " . $JOURNAL_NAME . "";
+					if ($PUBLISHER != "") $output = $output . ", " . $PUBLISHER . "";
+					if ($ISSUE != "" || $VOLUME != "" || $PAGENUM != "") {
+						$output = $output . ",";
+						if ($VOLUME != "") $output = $output . " " . $VOLUME . "";
+						if ($ISSUE != "") $output = $output . "(" . $ISSUE . ")";
+
+						if ($PAGENUM != "") $output = $output . ", " . $PAGENUM . "";
+						$output = $output . ".";
+					}
+					if ($PUBCTYST != "") $output = $output . ". " . $PUBCTYST . "";
+					if ($OPEN_ACCESS_URL != "") $output = $output . 
+						". <a href='" . $OPEN_ACCESS_URL . "' target='_blank'>" . 
+						$OPEN_ACCESS_URL . "</a>";
 				}
-				if ($PUBCTYST != "") $output = $output . ". " . $PUBCTYST . "";
-				if ($OPEN_ACCESS_URL != "") $output = $output . 
-					". <a href='" . $OPEN_ACCESS_URL . "' target='_blank'>" . 
-					$OPEN_ACCESS_URL . "</a>";
+				$output = $output . "</p>";
 			}
-			$output = $output . "</p>";
 		}
-	}
-	
-	//list of Awards and Honors
-	$refcount = count($xml->Record->PCI->PCI_AWARDHONOR_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Awards and Honors</h3>";
-		foreach($xml->Record->PCI->PCI_AWARDHONOR_REF as $item){
-			//save items as variables
-			$NAME = $item->AWARDHONOR->NAME;
-			$ORG = $item->AWARDHONOR->ORG;
-			$DTY_DATE = $item->AWARDHONOR->DTY_DATE;
-			
-			//test if the variable has contents, then format output
-			$output = $output . "<p>";
-			if ($NAME != "") $output = $output . $NAME;
-			if ($ORG != "") $output = $output . ", " . $ORG;
-			if ($DTY_DATE != "") $output = $output . ", " . $DTY_DATE;
-			$output = $output . "</p>";
-		}
-	}
-	
-		
-	//list of Patents and Copyrights
-	$refcount = count($xml->Record->PCI->PCI_INTELLPROP_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Patents and Copyrights</h3>";
-		foreach($xml->Record->PCI->PCI_INTELLPROP_REF as $item){
-			//save items as variables
-			$FORMAT = $item->INTELLPROP->FORMAT;
-			$TITLE = $item->INTELLPROP->TITLE;
-			$DESC_ENGAGE = $item->INTELLPROP->DESC_ENGAGE;
-			$DTY_APPROVE = $item->INTELLPROP->DTY_APPROVE;
-			
-			//test if the variable has contents, then format output
-			$output = $output . "<p>(";
-			if ($FORMAT != "") $output = $output . "" . $FORMAT . "";
-			if ($DTY_APPROVE != "") $output = $output . " " . $DTY_APPROVE;
-			$output = $output . ")";
-			if ($TITLE != "") $output = $output . " " . $TITLE;
-			if ($DESC_ENGAGE != "") $output = $output . " <em>" . $DESC_ENGAGE . "</em>";
-			$output = $output . "</p>";
-		}
-	}
-			
-	//list of Education Records
-	$refcount = count($xml->Record->PCI->PCI_EDUCATION_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Education</h3>";
-		foreach($xml->Record->PCI->PCI_EDUCATION_REF as $item){
-			//save items as variables
-			$DEG = $item->EDUCATION->DEG;
-			$MAJOR = $item->EDUCATION->MAJOR;
-			$SCHOOL = $item->EDUCATION->SCHOOL;
-			$YR_COMP = $item->EDUCATION->YR_COMP;
-			
-			//test if the variable has contents, then format output
-			$output = $output . "<p>";
-			if ($DEG != "") $output = $output . "" . $DEG . "";
-			if ($MAJOR != "") $output = $output . " " . $MAJOR;
-			if ($SCHOOL != "") $output = $output . " " . $SCHOOL;
-			if ($YR_COMP != "") $output = $output . ", " . $YR_COMP;
-			$output = $output . "</p>";
-		}
-	}
-	
-	//list of Presentations
-	$refcount = count($xml->Record->PCI->PCI_PRESENT_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Presentations</h3>";
-		foreach($xml->Record->PCI->PCI_PRESENT_REF as $item){
-			//save items as variables
-			$TITLE = $item->PRESENT->TITLE;
-			$NAME = $item->PRESENT->NAME;
-			$DTM_DATE = $item->PRESENT->DTM_DATE;
-			$DTY_DATE = $item->PRESENT->DTY_DATE;
-			$CITY = $item->PRESENT->CITY;
-			$STATE = $item->PRESENT->STATE;
-			$COUNTRY = $item->PRESENT->COUNTRY;
-			
-			//test if the variable has contents, then format output
-			$output = $output . "<p>";
-			if ($TITLE != "") $output = $output . "<em>" . $TITLE . "</em>";
-			if ($NAME != "") $output = $output . ", " . $NAME . "";
-			if ($DTM_DATE != "") $output = $output . ", " . $DTM_DATE . "";
-			if ($DTY_DATE != "") $output = $output . ", " . $DTY_DATE . "";
-			if ($CITY != "") $output = $output . ", " . $CITY . "";
-			if ($STATE != "") $output = $output . ", " . $STATE . "";
-			if ($COUNTRY != "") $output = $output . ", " . $COUNTRY . "";
-			$output = $output . "</p>";
-		}
-	}
-	
-	//list of Licensures and Certifications
-	$refcount = count($xml->Record->PCI->PCI_LICCERT_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Licensures and Certifications</h3>";
-		foreach($xml->Record->PCI->PCI_LICCERT_REF as $item){
-			//save items as variables
-			$DTM_START = $item->LICCERT->DTM_START;
-			$DTY_START = $item->LICCERT->DTY_START;
-			$TITLE = $item->LICCERT->TITLE;
-			$ORG = $item->LICCERT->ORG;
-			$DESC = $item->LICCERT->DESC;
 
-			//test if the variable has contents, then format output
-			$output = $output . "<p>";
-			if ($DTM_START != "") $output = $output . "" . $DTM_START . ", ";
-			if ($DTY_START != "") $output = $output . "" . $DTY_START . ", ";
-			if ($TITLE != "") $output = $output . "" . $TITLE . "";
-			if ($ORG != "") $output = $output . ", " . $ORG . "";
-			if ($DESC != "") $output = $output . ", <em>" . $DESC . "</em>";
-			$output = $output . "</p>";
+		//list of Presentations
+		if (!empty($xml->Record->PCI->PCI_PRESENT_REF->PRESENT)) {
+			$output = $output . "<h3>Presentations</h3>";
+			foreach($xml->Record->PCI->PCI_PRESENT_REF as $item){
+				//save items as variables
+				$TITLE = $item->PRESENT->TITLE;
+				$NAME = $item->PRESENT->NAME;
+				$DTM_DATE = $item->PRESENT->DTM_DATE;
+				$DTY_DATE = $item->PRESENT->DTY_DATE;
+				$CITY = $item->PRESENT->CITY;
+				$STATE = $item->PRESENT->STATE;
+				$COUNTRY = $item->PRESENT->COUNTRY;
+
+				//test if the variable has contents, then format output
+				$output = $output . "<p>";
+				if ($TITLE != "") $output = $output . "<em>" . $TITLE . "</em>";
+				if ($NAME != "") $output = $output . ", " . $NAME . "";
+				if ($DTM_DATE != "") $output = $output . ", " . $DTM_DATE . "";
+				if ($DTY_DATE != "") $output = $output . ", " . $DTY_DATE . "";
+				if ($CITY != "") $output = $output . ", " . $CITY . "";
+				if ($STATE != "") $output = $output . ", " . $STATE . "";
+				if ($COUNTRY != "") $output = $output . ", " . $COUNTRY . "";
+				$output = $output . "</p>";
+			}
 		}
-	}
-	
-	
-	//list of Consulting
-	$refcount = count($xml->Record->PCI->PCI_CONSULT_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Consulting</h3>";
-		foreach($xml->Record->PCI->PCI_CONSULT_REF as $item){
-			//save items as variables
-			$DTM_START = $item->CONSULT->DTM_START;
-			$DTY_START = $item->CONSULT->DTY_START;
-			$ORG = $item->CONSULT->ORG;
-			$LOCATION = $item->CONSULT->LOCATION;
-			$DESC = $item->CONSULT->DESC;
 
-			//test if the variable has contents, then format output
-			$output = $output . "<p>";
-			if ($DTM_START != "") $output = $output . "" . $DTM_START . ", ";
-			if ($DTY_START != "") $output = $output . "" . $DTY_START . ", ";
-			if ($ORG != "") $output = $output . "" . $ORG . "";
-			if ($LOCATION != "") $output = $output . ", " . $LOCATION . "";
-			if ($DESC != "") $output = $output . ", <em>" . $DESC . "</em>";
-			$output = $output . "</p>";
+		//list of Awards and Honors
+		if (!empty($xml->Record->PCI->PCI_AWARDHONOR_REF->AWARDHONOR)) {
+			$output = $output . "<h3>Awards and Honors</h3>";
+			foreach($xml->Record->PCI->PCI_AWARDHONOR_REF as $item){
+				//save items as variables
+				$NAME = $item->AWARDHONOR->NAME;
+				$ORG = $item->AWARDHONOR->ORG;
+				$DTY_DATE = $item->AWARDHONOR->DTY_DATE;
+
+				//test if the variable has contents, then format output
+				$output = $output . "<p>";
+				if ($NAME != "") $output = $output . $NAME;
+				if ($ORG != "") $output = $output . ", " . $ORG;
+				if ($DTY_DATE != "") $output = $output . ", " . $DTY_DATE;
+				$output = $output . "</p>";
+			}
 		}
-	}
-	
-	//list of Engagement Activities
-	$refcount = count($xml->Record->PCI->PCI_ENGAGEMENT_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Engagement Activities</h3>";
-		foreach($xml->Record->PCI->PCI_ENGAGEMENT_REF as $item){
-			//save items as variables
-			$TITLE = $item->ENGAGEMENT->TITLE;
-			$DTY_DATE = $item->ENGAGEMENT->DTY_DATE;
-			$DESC = $item->ENGAGEMENT->DESC;
 
-			//test if the variable has contents, then format output
-			$output = $output . "<p>";
-			if ($DTY_DATE != "") $output = $output . "(" . $DTY_DATE . ")";
-			if ($TITLE != "") $output = $output . " " . $TITLE . "";
-			if ($DESC != "") $output = $output . ", <em>" . $DESC . "</em>";
-			$output = $output . "</p>";
-		}
-	}
 
-	//list of Memberships
-	$refcount = count($xml->Record->PCI->PCI_MEMBER_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>Memberships</h3>";
-		foreach($xml->Record->PCI->PCI_MEMBER_REF as $item){
-			//save items as variables
-			$LEADERSHIP = $item->MEMBER->LEADERSHIP;
-			$NAME = $item->MEMBER->NAME;
-			$DTY_START = $item->MEMBER->DTY_START;
-			$DTY_END = $item->MEMBER->DTY_END;
-			$DESC = $item->MEMBER->DESC;
+		//list of Patents and Copyrights
+		if (!empty($xml->Record->PCI->PCI_INTELLPROP_REF->INTELLPROP)) {
+			$output = $output . "<h3>Patents and Copyrights</h3>";
+			foreach($xml->Record->PCI->PCI_INTELLPROP_REF as $item){
+				//save items as variables
+				$FORMAT = $item->INTELLPROP->FORMAT;
+				$TITLE = $item->INTELLPROP->TITLE;
+				$DESC_ENGAGE = $item->INTELLPROP->DESC_ENGAGE;
+				$DTY_APPROVE = $item->INTELLPROP->DTY_APPROVE;
 
-			//test if the variable has contents, then format output
-			$output = $output . "<p>";
-			if ($LEADERSHIP != "") $output = $output . "" . $LEADERSHIP . "";
-			if ($NAME != "") $output = $output . ", " . $NAME . "";
-			if ($DTY_START != "" || $DTY_END != "") {
-				$output = $output . " (";
-				if ($DTY_START != "") $output = $output . "" . $DTY_START . "";
-				if ($DTY_END != "") $output = $output . "-" . $DTY_END . "";
+				//test if the variable has contents, then format output
+				$output = $output . "<p>(";
+				if ($FORMAT != "") $output = $output . "" . $FORMAT . "";
+				if ($DTY_APPROVE != "") $output = $output . " " . $DTY_APPROVE;
 				$output = $output . ")";
+				if ($TITLE != "") $output = $output . " " . $TITLE;
+				if ($DESC_ENGAGE != "") $output = $output . " <em>" . $DESC_ENGAGE . "</em>";
+				$output = $output . "</p>";
 			}
-			$output = $output . "</p>";
-			
 		}
-	}
-	
-	
-	//External Partnerships
-	$refcount = count($xml->Record->PCI->PCI_EXTERNAL_PARTNERSHIPS_REF);
-	if ($refcount > 0) {
-		$output = $output . "<h3>External Partnerships</h3>";
-		foreach($xml->Record->PCI->PCI_EXTERNAL_PARTNERSHIPS_REF as $item){
-			//save items as variables
-			$TYPE = $item->EXTERNAL_PARTNERSHIPS->TYPE;
-			$DESC = $item->EXTERNAL_PARTNERSHIPS->DESC;
-			$ORG = $item->EXTERNAL_PARTNERSHIPS->ORG;
-			$CITY = $item->EXTERNAL_PARTNERSHIPS->CITY;
-			$STATE = $item->EXTERNAL_PARTNERSHIPS->STATE;
-			$DTM_DATE = $item->EXTERNAL_PARTNERSHIPS->DTM_DATE;
-			$DTY_DATE = $item->EXTERNAL_PARTNERSHIPS->DTY_DATE;
 
-			//test if the variable has contents, then format output
-			$output = $output . "<p>";
-			if ($TYPE != "") $output = $output . "" . $TYPE . "";
-			if ($DESC != "") $output = $output . ", <em>" . $DESC . "</em>";
-			if ($ORG != "") $output = $output . ", " . $ORG . "";
-			if ($CITY != "") $output = $output . ", " . $CITY . "";
-			if ($STATE != "") $output = $output . ", " . $STATE . "";
-			if ($DTM_DATE != "") $output = $output . " (" . $DTM_DATE . "";
-			if ($DTY_DATE != "") $output = $output . ", " . $DTY_DATE . ")";
 
-			$output = $output . "</p>";
-			
+		//list of Licensures and Certifications
+		if (!empty($xml->Record->PCI->PCI_LICCERT_REF->LICCERT)) {
+			$output = $output . "<h3>Licensures and Certifications</h3>";
+			foreach($xml->Record->PCI->PCI_LICCERT_REF as $item){
+				//save items as variables
+				$DTM_START = $item->LICCERT->DTM_START;
+				$DTY_START = $item->LICCERT->DTY_START;
+				$TITLE = $item->LICCERT->TITLE;
+				$ORG = $item->LICCERT->ORG;
+				$DESC = $item->LICCERT->DESC;
+
+				//test if the variable has contents, then format output
+				$output = $output . "<p>";
+				if ($DTM_START != "") $output = $output . "" . $DTM_START . ", ";
+				if ($DTY_START != "") $output = $output . "" . $DTY_START . ", ";
+				if ($TITLE != "") $output = $output . "" . $TITLE . "";
+				if ($ORG != "") $output = $output . ", " . $ORG . "";
+				if ($DESC != "") $output = $output . ", <em>" . $DESC . "</em>";
+				$output = $output . "</p>";
+			}
 		}
+
+
+		//list of Consulting
+		if (!empty($xml->Record->PCI->PCI_CONSULT_REF->CONSULT)) {
+			$output = $output . "<h3>Consulting</h3>";
+			foreach($xml->Record->PCI->PCI_CONSULT_REF as $item){
+				//save items as variables
+				$DTM_START = $item->CONSULT->DTM_START;
+				$DTY_START = $item->CONSULT->DTY_START;
+				$ORG = $item->CONSULT->ORG;
+				$LOCATION = $item->CONSULT->LOCATION;
+				$DESC = $item->CONSULT->DESC;
+
+				//test if the variable has contents, then format output
+				$output = $output . "<p>";
+				if ($DTM_START != "") $output = $output . "" . $DTM_START . ", ";
+				if ($DTY_START != "") $output = $output . "" . $DTY_START . ", ";
+				if ($ORG != "") $output = $output . "" . $ORG . "";
+				if ($LOCATION != "") $output = $output . ", " . $LOCATION . "";
+				if ($DESC != "") $output = $output . ", <em>" . $DESC . "</em>";
+				$output = $output . "</p>";
+			}
+		}
+
+		//list of Engagement Activities
+		if (!empty($xml->Record->PCI->PCI_ENGAGEMENT_REF->ENGAGEMENT)) {
+			$output = $output . "<h3>Engagement Activities</h3>";
+			foreach($xml->Record->PCI->PCI_ENGAGEMENT_REF as $item){
+				//save items as variables
+				$TITLE = $item->ENGAGEMENT->TITLE;
+				$DTY_DATE = $item->ENGAGEMENT->DTY_DATE;
+				$DESC = $item->ENGAGEMENT->DESC;
+
+				//test if the variable has contents, then format output
+				$output = $output . "<p>";
+				if ($DTY_DATE != "") $output = $output . "(" . $DTY_DATE . ")";
+				if ($TITLE != "") $output = $output . " " . $TITLE . "";
+				if ($DESC != "") $output = $output . ", <em>" . $DESC . "</em>";
+				$output = $output . "</p>";
+			}
+		}
+
+		//list of Memberships
+		if (!empty($xml->Record->PCI->PCI_MEMBER_REF->MEMBER)) {
+			$output = $output . "<h3>Memberships</h3>";
+			foreach($xml->Record->PCI->PCI_MEMBER_REF as $item){
+				//save items as variables
+				$LEADERSHIP = $item->MEMBER->LEADERSHIP;
+				$NAME = $item->MEMBER->NAME;
+				$DTY_START = $item->MEMBER->DTY_START;
+				$DTY_END = $item->MEMBER->DTY_END;
+				$DESC = $item->MEMBER->DESC;
+
+				//test if the variable has contents, then format output
+				$output = $output . "<p>";
+				if ($LEADERSHIP != "") $output = $output . "" . $LEADERSHIP . "";
+				if ($NAME != "") $output = $output . ", " . $NAME . "";
+				if ($DTY_START != "" || $DTY_END != "") {
+					$output = $output . " (";
+					if ($DTY_START != "") $output = $output . "" . $DTY_START . "";
+					if ($DTY_END != "") $output = $output . "-" . $DTY_END . "";
+					$output = $output . ")";
+				}
+				$output = $output . "</p>";
+
+			}
+		}
+
+
+		//External Partnerships
+		//$refcount = count($xml->Record->PCI->PCI_EXTERNAL_PARTNERSHIPS_REF);
+		if (!empty($xml->Record->PCI->PCI_EXTERNAL_PARTNERSHIPS_REF->EXTERNAL_PARTNERSHIPS)) {
+			$output = $output . "<h3>External Partnerships</h3>";
+			foreach($xml->Record->PCI->PCI_EXTERNAL_PARTNERSHIPS_REF as $item){
+				//save items as variables
+				$TYPE = $item->EXTERNAL_PARTNERSHIPS->TYPE;
+				$DESC = $item->EXTERNAL_PARTNERSHIPS->DESC;
+				$ORG = $item->EXTERNAL_PARTNERSHIPS->ORG;
+				$CITY = $item->EXTERNAL_PARTNERSHIPS->CITY;
+				$STATE = $item->EXTERNAL_PARTNERSHIPS->STATE;
+				$DTM_DATE = $item->EXTERNAL_PARTNERSHIPS->DTM_DATE;
+				$DTY_DATE = $item->EXTERNAL_PARTNERSHIPS->DTY_DATE;
+
+				//test if the variable has contents, then format output
+				$output = $output . "<p>";
+				if ($TYPE != "") $output = $output . "" . $TYPE . "";
+				if ($DESC != "") $output = $output . ", <em>" . $DESC . "</em>";
+				if ($ORG != "") $output = $output . ", " . $ORG . "";
+				if ($CITY != "") $output = $output . ", " . $CITY . "";
+				if ($STATE != "") $output = $output . ", " . $STATE . "";
+				if ($DTM_DATE != "") $output = $output . " (" . $DTM_DATE . "";
+				if ($DTY_DATE != "") $output = $output . ", " . $DTY_DATE . ")";
+
+				$output = $output . "</p>";
+
+			}
+		}
+		
+		//list of Websites
+		if (!empty($xml->Record->PCI->PCI_WEBSITE->WEBSITE)) {
+			$output = $output . "<h3>Links";
+			$output = $output . "</h3>";
+			foreach($xml->Record->PCI->PCI_WEBSITE as $item){
+				$output = $output . "<p><a href='" . $item->WEBSITE . "' target='-blank'>" . $item->WEBSITE . "</a></p>";
+			}
+		}
+	}	
+	if (!empty($output)) {
+		//start the output by hiding all of the CV content with CSS
+		$intro = "<style type='text/css'>#block-quicktabs-user-profile-cv-tabs {display:none;}</style>";
+		$intro = $intro . "<h2>Curriculum Vitae</h2>";
+		$output = $intro . $output;
+	} else {
+		//if there is no data in the output display an error message.
+		$output = "<div class='messages error margin-top-large'><p>The user " . $dm_request['user'] . " selected to show Curriculum Vitae data from Digital Measures but no data has been added to the Digital Measures Web Profile fields.</p></div>";
 	}
-	
-	
 	return $output;
 }
