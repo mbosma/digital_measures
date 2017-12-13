@@ -144,7 +144,7 @@ function _digital_measures_get_data($dm_request){
 
 		//bio paragraph
 		if ((string)$xml->Record->PCI->BIO != ""){
-			$output = $output . "<h3>Bief Biography</h3>" . 
+			$output = $output . "<h3>Brief Biography</h3>" . 
 				"<p>" . (string)$xml->Record->PCI->BIO . "</p>";
 		}
 
@@ -198,7 +198,7 @@ function _digital_measures_get_data($dm_request){
 
 		//list of Intellectual content
 		if (!empty($xml->Record->PCI->PCI_INTELLCONT_REF->INTELLCONT)) {
-			$output = $output . "<h3>Intellectual Content (renaming and adding separated buckets)</h3>";
+			$output = $output . "<h3>Intellectual Content</h3>";
 			foreach($xml->Record->PCI->PCI_INTELLCONT_REF as $item){
 				$output = $output . "<p>";
 
